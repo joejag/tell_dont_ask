@@ -30,12 +30,12 @@ module Conway
       puts ''
     end
 
-    def cell alive
-      if alive
-        print 'X'
-      else
-        print '_'
-      end
+    def live_cell
+      print 'X'
+    end
+
+    def dead_cell
+      print '_'
     end
   end
 
@@ -90,7 +90,11 @@ module Conway
       (0..3).each do |y|
         printer.new_row
         (0..3).each do |x|
-          printer.cell @live_cells.has_key? [x,y]
+          if @live_cells.has_key? [x,y]
+            printer.live_cell
+          else 
+            printer.dead_cell
+          end
         end
       end
     end
@@ -124,7 +128,7 @@ module Conway
   end
 
 
-  
+
   class LiveCell < Cell
     def survives?
       @neighbours.size == 2 or @neighbours.size == 3
