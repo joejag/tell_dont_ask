@@ -1,7 +1,6 @@
 module Conway
 
   class God
-
     def initialize
       @grid = Grid.new
     end
@@ -22,7 +21,6 @@ module Conway
       @grid.cells_must_be_born
       @grid.the_world_revolves
     end
-
   end
 
 
@@ -44,7 +42,6 @@ module Conway
 
 
   class Grid
-
     def initialize
       @live_cells = {}
       @next_generation = {}
@@ -105,7 +102,6 @@ module Conway
     def life_listener(x,y)
       lambda { self.report_life(x,y) }
     end
-
   end
 
 
