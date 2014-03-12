@@ -43,8 +43,8 @@ module Conway
 
   class Grid
     def initialize
-      @live_cells = {}
-      @next_generation = {}
+      @live_cells = Hash.new(DeadCell.new)
+      @next_generation = Hash.new(DeadCell.new)
     end
 
     def make_life x, y
@@ -60,9 +60,7 @@ module Conway
     def let_neighbours_of_cell_know_you_are_alive x, y, cell
       ((y-1)..(y+1)).each do |n_y|
         ((x-1)..(x+1)).each do |n_x|
-          if @live_cells.has_key? [n_x, n_y] and not [n_x, n_y] == [x, y]
-            cell.add_neighbour @live_cells[[n_x, n_y]]
-          end
+          @live_cells[[n_x, n_y]].inform_neighbour cell unless [n_x, n_y] == [x, y]
         end
       end
     end
@@ -83,18 +81,14 @@ module Conway
 
     def the_world_revolves
       @live_cells = @next_generation
-      @next_generation = {}
+      @next_generation = Hash.new(DeadCell.new)
     end
 
     def print printer
       (0..3).each do |y|
         printer.new_row
         (0..3).each do |x|
-          if @live_cells.has_key? [x,y]
-            printer.live_cell
-          else 
-            printer.dead_cell
-          end
+          @live_cells[[x, y]].print(printer)
         end
       end
     end
@@ -111,7 +105,7 @@ module Conway
 
 
   class Cell
-    def initialize lifecycle_listener
+    def initialize(lifecycle_listener=nil)
       @neighbours = []
       @lifecycle_listener = lifecycle_listener
     end
@@ -133,6 +127,14 @@ module Conway
     def survives?
       @neighbours.size == 2 or @neighbours.size == 3
     end
+
+    def inform_neighbour neighbour
+      neighbour.add_neighbour self
+    end
+
+    def print(printer)
+      printer.live_cell
+    end
   end
 
 
@@ -140,6 +142,14 @@ module Conway
   class DeadCell < Cell
     def survives?
       @neighbours.size == 3
+    end
+
+    def inform_neighbour neighbour
+      #noop
+    end
+
+    def print(printer)
+      printer.dead_cell
     end
   end
 
