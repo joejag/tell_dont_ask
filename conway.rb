@@ -25,6 +25,8 @@ module Conway
 
   end
 
+
+
   class WorldPrinter
     def new_row
       puts ''
@@ -38,6 +40,8 @@ module Conway
       end
     end
   end
+
+
 
   class Grid
 
@@ -104,6 +108,8 @@ module Conway
 
   end
 
+
+
   class Cell
     def initialize lifecycle_listener
       @neighbours = []
@@ -121,11 +127,15 @@ module Conway
     end
   end
 
+
+  
   class LiveCell < Cell
     def survives?
       @neighbours.size == 2 or @neighbours.size == 3
     end
   end
+
+
 
   class DeadCell < Cell
     def survives?
