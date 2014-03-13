@@ -2,24 +2,24 @@ module Conway
 
   class God
     def initialize
-      @grid = Grid.new
+      @world = World.new
     end
 
     def let_there_be_life
-      @grid.make_life(1,1)
-      @grid.make_life(1,2)
-      @grid.make_life(1,3)
+      @world.make_life(1,1)
+      @world.make_life(1,2)
+      @world.make_life(1,3)
     end
 
-    def describe_the_world(visitor=WorldPrinter.new)
-      @grid.visit visitor
+    def tour_the_world(visitor=WorldPrinter.new)
+      @world.visit visitor
     end
 
     def pass_judgement
-      @grid.command_cells_to_meet_their_neighbours
-      @grid.cells_must_die
-      @grid.cells_must_be_born
-      @grid.the_world_revolves
+      @world.command_cells_to_meet_their_neighbours
+      @world.cells_must_die
+      @world.cells_must_be_born
+      @world.the_world_revolves
     end
   end
 
@@ -41,23 +41,27 @@ module Conway
 
 
 
-  class Grid
+  class World
+
+    START_CELL = 0
+    FINISH_CELL = 3
+
     def initialize
       @live_cells = Hash.new(DeadCell.new)
       @next_generation = Hash.new(DeadCell.new)
     end
 
-    def make_life x, y
+    def make_life(x, y)
       @live_cells[[x,y]] = LiveCell.new(life_listener(x,y))
     end
 
     def command_cells_to_meet_their_neighbours
       @live_cells.each do |(x,y), cell|
-        let_neighbours_of_cell_know_you_are_alive(x, y, cell)
+        inform_neighbour_of_presence(x, y, cell)
       end
     end
 
-    def let_neighbours_of_cell_know_you_are_alive x, y, cell
+    def inform_neighbour_of_presence(x, y, cell)
       neighbours = [
         [x-1, y+1], [x, y+1], [x+1, y+1],
         [x-1,  y ]          , [x+1,  y ],
@@ -65,7 +69,7 @@ module Conway
       ]
 
       neighbours.each do |(n_x, n_y)|
-          @live_cells[[n_x, n_y]].inform_neighbour cell
+        @live_cells[[n_x, n_y]].inform_neighbour cell
       end
     end
 
@@ -74,25 +78,11 @@ module Conway
     end
 
     def cells_must_be_born
-      (0..3).each do |y|
-        (0..3).each do |x|
+      (START_CELL..FINISH_CELL).each do |y|
+        (START_CELL..FINISH_CELL).each do |x|
           cell = DeadCell.new(life_listener(x,y))
-          let_neighbours_of_cell_know_you_are_alive(x, y, cell)
+          inform_neighbour_of_presence(x, y, cell)
           cell.decide_fate
-        end
-      end
-    end
-
-    def the_world_revolves
-      @live_cells = @next_generation
-      @next_generation = Hash.new(DeadCell.new)
-    end
-
-    def visit visitor
-      (0..3).each do |y|
-        visitor.new_row
-        (0..3).each do |x|
-          @live_cells[[x, y]].visit(visitor)
         end
       end
     end
@@ -104,12 +94,26 @@ module Conway
     def life_listener(x,y)
       lambda { self.report_life(x,y) }
     end
+
+    def the_world_revolves
+      @live_cells = @next_generation
+      @next_generation = Hash.new(DeadCell.new)
+    end
+
+    def visit visitor
+      (START_CELL..FINISH_CELL).each do |y|
+        visitor.new_row
+        (START_CELL..FINISH_CELL).each do |x|
+          @live_cells[[x, y]].visit(visitor)
+        end
+      end
+    end
   end
 
 
 
   class Cell
-    def initialize(lifecycle_listener=nil)
+    def initialize(lifecycle_listener=lambda{})
       @neighbours = []
       @lifecycle_listener = lifecycle_listener
     end
@@ -124,7 +128,6 @@ module Conway
       end
     end
   end
-
 
 
   class LiveCell < Cell
@@ -142,14 +145,13 @@ module Conway
   end
 
 
-
   class DeadCell < Cell
     def survives?
       @neighbours.size == 3
     end
 
     def inform_neighbour neighbour
-      #noop
+      # noop
     end
 
     def visit visitor
@@ -163,7 +165,7 @@ god = Conway::God.new
 god.let_there_be_life
 
 4.times do
-  god.describe_the_world
+  god.tour_the_world
   god.pass_judgement
   puts ''
 end
