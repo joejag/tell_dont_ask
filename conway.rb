@@ -26,7 +26,7 @@ module Conway
 
 
   class WorldPrinter
-    def new_row
+    def fresh_row
       puts ''
     end
 
@@ -52,7 +52,11 @@ module Conway
     end
 
     def make_life(x, y)
-      @live_cells[[x,y]] = LiveCell.new(life_listener(x,y))
+      make_live_cell(@live_cells, x, y)
+    end
+
+    def make_live_cell(coll, x, y)
+      coll[[x,y]] = LiveCell.new(life_listener(x,y))
     end
 
     def command_cells_to_meet_their_neighbours
@@ -62,13 +66,13 @@ module Conway
     end
 
     def inform_neighbour_of_presence(x, y, cell)
-      neighbours = [
+      coords_of_neighbours = [
         [x-1, y+1], [x, y+1], [x+1, y+1],
         [x-1,  y ]          , [x+1,  y ],
         [x-1, y-1], [x, y-1], [x+1, y-1],
       ]
 
-      neighbours.each do |(n_x, n_y)|
+      coords_of_neighbours.each do |(n_x, n_y)|
         @live_cells[[n_x, n_y]].inform_neighbour cell
       end
     end
@@ -88,7 +92,7 @@ module Conway
     end
 
     def report_life(x,y)
-      @next_generation[[x,y]] = LiveCell.new(life_listener(x,y))
+      make_live_cell(@next_generation, x, y)
     end
 
     def life_listener(x,y)
@@ -102,7 +106,7 @@ module Conway
 
     def visit visitor
       (START_CELL..FINISH_CELL).each do |y|
-        visitor.new_row
+        visitor.fresh_row
         (START_CELL..FINISH_CELL).each do |x|
           @live_cells[[x, y]].visit(visitor)
         end
