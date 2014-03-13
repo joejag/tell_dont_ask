@@ -16,7 +16,7 @@ module Conway
     end
 
     def pass_judgement
-      @grid.let_neighbours_know_you_are_alive
+      @grid.command_cells_to_meet_their_neighbours
       @grid.cells_must_die
       @grid.cells_must_be_born
       @grid.the_world_revolves
@@ -51,17 +51,21 @@ module Conway
       @live_cells[[x,y]] = LiveCell.new(life_listener(x,y))
     end
 
-    def let_neighbours_know_you_are_alive
+    def command_cells_to_meet_their_neighbours
       @live_cells.each do |(x,y), cell|
         let_neighbours_of_cell_know_you_are_alive(x, y, cell)
       end
     end
 
     def let_neighbours_of_cell_know_you_are_alive x, y, cell
-      ((y-1)..(y+1)).each do |n_y|
-        ((x-1)..(x+1)).each do |n_x|
-          @live_cells[[n_x, n_y]].inform_neighbour cell unless [n_x, n_y] == [x, y]
-        end
+      neighbours = [
+        [x-1, y+1], [x, y+1], [x+1, y+1],
+        [x-1,  y ]          , [x+1,  y ],
+        [x-1, y-1], [x, y-1], [x+1, y-1],
+      ]
+
+      neighbours.each do |(n_x,n_y)|
+          @live_cells[[n_x, n_y]].inform_neighbour cell
       end
     end
 
