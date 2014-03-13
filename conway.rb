@@ -11,8 +11,8 @@ module Conway
       @grid.make_life(1,3)
     end
 
-    def describe_the_world(printer=WorldPrinter.new)
-      @grid.print printer
+    def describe_the_world(visitor=WorldPrinter.new)
+      @grid.visit visitor
     end
 
     def pass_judgement
@@ -64,7 +64,7 @@ module Conway
         [x-1, y-1], [x, y-1], [x+1, y-1],
       ]
 
-      neighbours.each do |(n_x,n_y)|
+      neighbours.each do |(n_x, n_y)|
           @live_cells[[n_x, n_y]].inform_neighbour cell
       end
     end
@@ -88,11 +88,11 @@ module Conway
       @next_generation = Hash.new(DeadCell.new)
     end
 
-    def print printer
+    def visit visitor
       (0..3).each do |y|
-        printer.new_row
+        visitor.new_row
         (0..3).each do |x|
-          @live_cells[[x, y]].print(printer)
+          @live_cells[[x, y]].visit(visitor)
         end
       end
     end
@@ -136,8 +136,8 @@ module Conway
       neighbour.add_neighbour self
     end
 
-    def print(printer)
-      printer.live_cell
+    def visit visitor
+      visitor.live_cell
     end
   end
 
@@ -152,8 +152,8 @@ module Conway
       #noop
     end
 
-    def print(printer)
-      printer.dead_cell
+    def visit visitor
+      visitor.dead_cell
     end
   end
 
